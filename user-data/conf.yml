@@ -58,11 +58,3 @@ sections:
       icon: fab fa-gitlab
       url: 'https://gitlab.com/'
       target: newtab
-
-- name: Today
-  icon: far fa-smile-beam
-  widgets:
-  - type: cve-vulnerabilities
-    options:
-      limit: 2
-      cvssV2Severity: LOW
