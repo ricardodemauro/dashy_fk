@@ -45,3 +45,24 @@ sections:
     url: https://github.com/Lissy93/dashy/blob/master/.github/SUPPORT.md
     icon: far fa-hands-helping
   
+- name: External
+  icon: far fa-rocket
+  items:
+    - title: GitHub
+      description: 'Personal repositories, issues, and project source code'
+      icon: fab fa-github
+      url: 'https://github.com/ricardodemauro/OctoputsHead.AI'
+      target: newtab
+    - title: GitLab
+      description: 'Personal repositories, CI/CD pipelines, and issue tracking'
+      icon: fab fa-gitlab
+      url: 'https://gitlab.com/'
+      target: newtab
+
+- name: Today
+  icon: far fa-smile-beam
+  widgets:
+  - type: cve-vulnerabilities
+    options:
+      limit: 2
+      cvssV2Severity: LOW
