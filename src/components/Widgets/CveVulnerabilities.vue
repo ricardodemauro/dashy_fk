@@ -101,7 +101,7 @@ export default {
     },
 
     /* Make GET request to CoinGecko API endpoint */
-    async fetchData() {
+    fetchData() {
       this.defaultTimeout = 12000;
       this.makeRequest(this.endpointTotal)
         .then(sample => {
