@@ -126,12 +126,35 @@ export default {
       this.cveList = cveList;
     },
     parseScore(metrics = {}) {
-      if (!metrics || !metrics.cvssMetricV2) {
+      if (!metrics) {
         return 'Unset';
       }
-      for (let i = 0; i < metrics.cvssMetricV2.length; i += 1) {
-        if (metrics.cvssMetricV2[i].baseSeverity !== undefined && metrics.cvssMetricV2[i].baseSeverity !== '') {
-          return metrics.cvssMetricV2[i].baseSeverity;
+      if (metrics.cvssMetricV40 !== undefined) {
+        for (let i = 0; i < metrics.cvssMetricV40.length; i += 1) {
+          if (metrics.cvssMetricV40[i].baseSeverity !== undefined && metrics.cvssMetricV40[i].baseSeverity !== '') {
+            return metrics.cvssMetricV40[i].baseSeverity;
+          }
+        }
+      }
+      if (metrics.cvssMetricV31 !== undefined) {
+        for (let i = 0; i < metrics.cvssMetricV31.length; i += 1) {
+          if (metrics.cvssMetricV31[i].baseSeverity !== undefined && metrics.cvssMetricV31[i].baseSeverity !== '') {
+            return metrics.cvssMetricV31[i].baseSeverity;
+          }
+        }
+      }
+      if (metrics.cvssMetricV30 !== undefined) {
+        for (let i = 0; i < metrics.cvssMetricV30.length; i += 1) {
+          if (metrics.cvssMetricV30[i].baseSeverity !== undefined && metrics.cvssMetricV30[i].baseSeverity !== '') {
+            return metrics.cvssMetricV30[i].baseSeverity;
+          }
+        }
+      }
+      if (metrics.cvssMetricV2 !== undefined) {
+        for (let i = 0; i < metrics.cvssMetricV2.length; i += 1) {
+          if (metrics.cvssMetricV2[i].baseSeverity !== undefined && metrics.cvssMetricV2[i].baseSeverity !== '') {
+            return metrics.cvssMetricV2[i].baseSeverity;
+          }
         }
       }
       return 'Unset';

@@ -631,6 +631,7 @@ This widget display email addresses / aliases from addy.io. Click an email addre
 Keep track of recent security advisories and vulnerabilities, with optional filtering by score, exploits, vendor and product. All fields are optional.
 
 Sources from: https://services.nvd.nist.gov/rest/json/cves/2.0
+Docs: https://nvd.nist.gov/developers/vulnerabilities
 
 <p align="center"><img width="400" src="https://storage.googleapis.com/as93-screenshots/dashy/cve.png" /></p>
 
