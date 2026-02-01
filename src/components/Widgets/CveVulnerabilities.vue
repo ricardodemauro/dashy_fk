@@ -7,9 +7,6 @@
         <p class="title">{{ cve.id }}</p>
         <span class="date">{{ cve.publishDate | formatDate }}</span>
         <span class="last-updated">Last Updated: {{ cve.updateDate | formatDate }}</span>
-        <span :class="`exploit-count ${makeExploitColor(cve.numExploits)}`">
-          {{ cve.numExploits | formatExploitCount }}
-        </span>
       </div>
     </a>
     <p class="cve-description">
@@ -33,6 +30,7 @@ export default {
   data() {
     return {
       cveList: null,
+      total: 10,
     };
   },
   filters: {
@@ -49,50 +47,32 @@ export default {
     },
   },
   computed: {
-    /* Get sort order, defaults to publish date */
-    sortBy() {
-      const usersChoice = this.options.sortBy;
-      let sortCode;
-      switch (usersChoice) {
-        case ('publish-date'): sortCode = 1; break;
-        case ('last-update'): sortCode = 2; break;
-        case ('cve-code'): sortCode = 3; break;
-        default: sortCode = 1;
-      }
-      return `&orderby=${sortCode}`;
+    endpointTotal() {
+      let apiUrl = `${widgetApiEndpoints.cveVulnerabilities}?resultsPerPage=1&startIndex=1&noRejected`;
+      apiUrl = this.appendQuery(apiUrl, this.options, 'cveTag', 'cveTag');
+      apiUrl = this.appendQuery(apiUrl, this.options, 'cvssV2Severity', 'cvssV2Severity');
+      apiUrl = this.appendQuery(apiUrl, this.options, 'cvssV3Severity', 'cvssV3Severity');
+      apiUrl = this.appendQuery(apiUrl, this.options, 'cvssV4Severity', 'cvssV4Severity');
+      apiUrl = this.appendQuery(apiUrl, this.options, 'keywordSearch', 'keywordSearch');
+      apiUrl = this.appendQuery(apiUrl, this.options, 'sourceIdentifier', 'sourceIdentifier');
+
+      return apiUrl;
     },
-    /* The minimum CVE score to fetch/ show, defaults to 4 */
-    minScore() {
-      const usersChoice = this.options.minScore;
-      let minScoreVal = 4;
-      if (usersChoice && (usersChoice >= 0 || usersChoice <= 10)) {
-        minScoreVal = usersChoice;
-      }
-      return `&cvssscoremin=${minScoreVal}`;
-    },
-    vendorId() {
-      return (this.options.vendorId) ? `&vendor_id=${this.options.vendorId}` : '';
-    },
-    productId() {
-      return (this.options.productId) ? `&product_id=${this.options.productId}` : '';
-    },
-    /* Should only show results with exploits, defaults to false */
-    hasExploit() {
-      const shouldShow = this.options.hasExploit ? 1 : 0;
-      return `&hasexp=${shouldShow}`;
-    },
-    /* The number of results to fetch/ show, defaults to 10 */
-    limit() {
-      const usersChoice = this.options.limit;
-      let numResults = 10;
-      if (usersChoice && (usersChoice >= 5 || usersChoice <= 30)) {
-        numResults = usersChoice;
-      }
-      return `&numrows=${numResults}`;
-    },
-    endpoint() {
-      return `${widgetApiEndpoints.cveVulnerabilities}?${this.sortBy}${this.limit}`
-        + `${this.minScore}${this.vendorId}${this.productId}${this.hasExploit}`;
+    endpointPage() {
+      const page = this.total - (this.options.limit ?? 5);
+      let apiUrl = `${widgetApiEndpoints.cveVulnerabilities}`
+      + `?resultsPerPage=${(this.options.limit ?? 5)}`
+      + `&startIndex=${page}`
+      + '&noRejected';
+
+      apiUrl = this.appendQuery(apiUrl, this.options, 'cveTag', 'cveTag');
+      apiUrl = this.appendQuery(apiUrl, this.options, 'cvssV2Severity', 'cvssV2Severity');
+      apiUrl = this.appendQuery(apiUrl, this.options, 'cvssV3Severity', 'cvssV3Severity');
+      apiUrl = this.appendQuery(apiUrl, this.options, 'cvssV4Severity', 'cvssV4Severity');
+      apiUrl = this.appendQuery(apiUrl, this.options, 'keywordSearch', 'keywordSearch');
+      apiUrl = this.appendQuery(apiUrl, this.options, 'sourceIdentifier', 'sourceIdentifier');
+
+      return apiUrl;
     },
     proxyReqEndpoint() {
       const baseUrl = process.env.VUE_APP_DOMAIN || window.location.origin;
@@ -100,26 +80,58 @@ export default {
     },
   },
   methods: {
+    appendQuery(url = '', opts = {}, property = '', paramUrl = '') {
+      const allowedKeys = [
+        'cveTag',
+        'cvssV2Severity',
+        'cvssV3Severity',
+        'cvssV4Severity',
+        'keywordSearch',
+        'sourceIdentifier',
+      ];
+
+      if (allowedKeys.includes(property)) {
+        // eslint-disable-next-line no-prototype-builtins
+        if (opts.hasOwnProperty(property)) {
+          return `${url}&${paramUrl}=${opts[property]}`;
+        }
+      }
+
+      return url;
+    },
+
     /* Make GET request to CoinGecko API endpoint */
-    fetchData() {
+    async fetchData() {
       this.defaultTimeout = 12000;
-      this.makeRequest(this.endpoint).then(this.processData);
+      this.makeRequest(this.endpointTotal)
+        .then(sample => {
+          this.total = sample.totalResults;
+          this.makeRequest(this.endpointPage)
+            .then(this.processData);
+        });
     },
     /* Assign data variables to the returned data */
     processData(data) {
       const cveList = [];
-      data.forEach((cve) => {
+      data.vulnerabilities.forEach(({ cve = {} }) => {
         cveList.push({
-          id: cve.cve_id,
-          score: cve.cvss_score,
-          url: cve.url,
-          description: cve.summary,
-          numExploits: cve.exploit_count,
-          publishDate: cve.publish_date,
-          updateDate: cve.update_date,
+          id: cve.id,
+          score: cve.metrics?.cvssMetricV2?.map(x => x.baseSeverity ?? 'UNSET') ?? 'UNSET',
+          url: `https://nvd.nist.gov/vuln/detail/${cve.id}`,
+          description: this.parseDescriptions(cve.descriptions),
+          publishDate: cve.published,
+          updateDate: cve.lastModified,
         });
       });
       this.cveList = cveList;
+    },
+    parseDescriptions(cveDescriptions = []) {
+      for (let i = 0; i < cveDescriptions.length; i += 1) {
+        if (cveDescriptions[i].lang === 'en') {
+          return cveDescriptions[i].value;
+        }
+      }
+      return 'Unset';
     },
     makeExploitColor(numExploits) {
       if (!numExploits || Number.isNaN(parseInt(numExploits, 10))) return 'fg-grey';
