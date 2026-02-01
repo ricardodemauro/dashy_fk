@@ -59,7 +59,7 @@ export default {
       return apiUrl;
     },
     endpointPage() {
-      const page = this.total - (this.options.limit ?? 5);
+      const page = Math.max(this.total - (this.options.limit ?? 5), 1);
       let apiUrl = `${widgetApiEndpoints.cveVulnerabilities}`
       + `?resultsPerPage=${(this.options.limit ?? 5)}`
       + `&startIndex=${page}`
@@ -116,7 +116,7 @@ export default {
       data.vulnerabilities.forEach(({ cve = {} }) => {
         cveList.push({
           id: cve.id,
-          score: cve.metrics?.cvssMetricV2?.map(x => x.baseSeverity ?? 'UNSET') ?? 'UNSET',
+          score: this.parseScore(cve.metrics),
           url: `https://nvd.nist.gov/vuln/detail/${cve.id}`,
           description: this.parseDescriptions(cve.descriptions),
           publishDate: cve.published,
@@ -124,6 +124,17 @@ export default {
         });
       });
       this.cveList = cveList;
+    },
+    parseScore(metrics = {}) {
+      if (!metrics || !metrics.cvssMetricV2) {
+        return 'Unset';
+      }
+      for (let i = 0; i < metrics.cvssMetricV2.length; i += 1) {
+        if (metrics.cvssMetricV2[i].baseSeverity !== undefined && metrics.cvssMetricV2[i].baseSeverity !== '') {
+          return metrics.cvssMetricV2[i].baseSeverity;
+        }
+      }
+      return 'Unset';
     },
     parseDescriptions(cveDescriptions = []) {
       for (let i = 0; i < cveDescriptions.length; i += 1) {
