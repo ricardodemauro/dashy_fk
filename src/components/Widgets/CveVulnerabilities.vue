@@ -173,21 +173,12 @@ export default {
       }
       return 'Unset';
     },
-    makeExploitColor(numExploits) {
-      if (!numExploits || Number.isNaN(parseInt(numExploits, 10))) return 'fg-grey';
-      const count = parseInt(numExploits, 10);
-      if (count === 0) return 'fg-green';
-      if (count === 1) return 'fg-orange';
-      if (count > 1) return 'fg-red';
-      return 'fg-grey';
-    },
     makeScoreColor(inputScore) {
-      if (!inputScore || Number.isNaN(parseFloat(inputScore))) return 'bg-grey';
-      const score = parseFloat(inputScore);
-      if (score >= 9) return 'bg-red';
-      if (score >= 7) return 'bg-orange';
-      if (score >= 4) return 'bg-yellow';
-      if (score >= 0.1) return 'bg-green';
+      if (!inputScore) return 'bg-grey';
+      if (inputScore === 'CRITICAL') return 'bg-red';
+      if (inputScore === 'HIGH') return 'bg-orange';
+      if (inputScore === 'MEDIUM') return 'bg-yellow';
+      if (inputScore === 'LOW') return 'bg-green';
       return 'bg-blue';
     },
   },
