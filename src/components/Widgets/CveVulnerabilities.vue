@@ -131,22 +131,28 @@ export default {
       }
       if (metrics.cvssMetricV40 !== undefined) {
         for (let i = 0; i < metrics.cvssMetricV40.length; i += 1) {
-          if (metrics.cvssMetricV40[i].baseSeverity !== undefined && metrics.cvssMetricV40[i].baseSeverity !== '') {
-            return metrics.cvssMetricV40[i].baseSeverity;
+          if (metrics.cvssMetricV40[i].cvssData !== undefined &&
+              metrics.cvssMetricV40[i].cvssData.baseSeverity !== undefined &&
+              metrics.cvssMetricV40[i].cvssData.baseSeverity !== '') {
+            return metrics.cvssMetricV40[i].cvssData.baseSeverity;
           }
         }
       }
       if (metrics.cvssMetricV31 !== undefined) {
         for (let i = 0; i < metrics.cvssMetricV31.length; i += 1) {
-          if (metrics.cvssMetricV31[i].baseSeverity !== undefined && metrics.cvssMetricV31[i].baseSeverity !== '') {
-            return metrics.cvssMetricV31[i].baseSeverity;
+          if (metrics.cvssMetricV31[i].cvssData !== undefined &&
+              metrics.cvssMetricV31[i].cvssData.baseSeverity !== undefined &&
+              metrics.cvssMetricV31[i].cvssData.baseSeverity !== '') {
+            return metrics.cvssMetricV31[i].cvssData.baseSeverity;
           }
         }
       }
       if (metrics.cvssMetricV30 !== undefined) {
         for (let i = 0; i < metrics.cvssMetricV30.length; i += 1) {
-          if (metrics.cvssMetricV30[i].baseSeverity !== undefined && metrics.cvssMetricV30[i].baseSeverity !== '') {
-            return metrics.cvssMetricV30[i].baseSeverity;
+          if (metrics.cvssMetricV30[i].cvssData !== undefined &&
+              metrics.cvssMetricV30[i].cvssData.baseSeverity !== undefined &&
+              metrics.cvssMetricV30[i].cvssData.baseSeverity !== '') {
+            return metrics.cvssMetricV30[i].cvssData.baseSeverity;
           }
         }
       }
